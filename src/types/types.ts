@@ -1,3 +1,7 @@
+type FuzzyDateInt = {
+    seasonYear: number | null;
+};
+
 type QueryRes = {
     data: {
         data: {
@@ -14,3 +18,17 @@ type QueryRes = {
 };
 
 export type { QueryRes };
+
+type QueryPageIndex = {
+    data: {
+        data: {
+            Page: {
+                media: Array<{
+                    seasonYear: FuzzyDateInt;
+                }>;
+            };
+        };
+    };
+};
+
+export type { QueryPageIndex };

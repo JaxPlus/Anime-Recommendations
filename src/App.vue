@@ -1,9 +1,27 @@
 <script setup lang="ts">
-// import { computed, ref } from "vue";
+import { computed, ref } from "vue";
 import Recommendations from "./components/Recommendations.vue";
 import Login from "./components/Login.vue";
-import RecommendationsAuthorized from "./components/RecommendationsAuthorized.vue";
+// import RecommendationsAuthorized from "./components/RecommendationsAuthorized.vue";
 import Generes from "./components/Generes.vue";
+
+const routes: Record<string, any> = {
+    "/": Login,
+    "/media": Generes,
+    "/recommendations": Recommendations,
+};
+
+const currentPath = ref(window.location.hash);
+
+window.addEventListener("hashchange", () => {
+    currentPath.value = window.location.hash;
+});
+
+console.log(currentPath.value.slice(1));
+
+const currentView = computed(() => {
+    return routes[currentPath.value.slice(1) || "/"] || Login;
+});
 
 const url = "https://graphql.anilist.co";
 
@@ -14,11 +32,16 @@ const accessToken = urlParams.get("access_token");
 
 <template>
     <div>
-        <!-- <Suspense> <a href="#/">Home</a> </Suspense> |
-        <a href="#/login">Login</a>
+        <a href="#/">Home</a> | <a href="#/media">Media</a> |
+        <a href="#/recommendations">Recommendations</a>
 
-        <component :is="currentView" /> -->
-        <Login />
+        <Suspense>
+            <component :is="currentView" :url="url" :token="accessToken" />
+        </Suspense>
+
+        <br />
+
+        <!-- <Login />
 
         <Suspense>
             <Generes :url="url" />
@@ -34,6 +57,6 @@ const accessToken = urlParams.get("access_token");
 
         <Suspense v-else>
             <Recommendations :url="url" />
-        </Suspense>
+        </Suspense> -->
     </div>
 </template>

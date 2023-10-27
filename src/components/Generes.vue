@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import axios from "axios";
 import { Ref, ref } from "vue";
-import type { QueryRes } from "../js/types";
+import type { QueryRes } from "../types/types";
+import Media from "./Media.vue";
 
 const props = defineProps<{
     url: string;
@@ -72,35 +73,44 @@ function handleGenreSelection(genre: string) {
         selectedGenres.value = selectedGenres.value.filter((g) => g !== genre);
     } else {
         selectedGenres.value.push(genre);
-        response();
     }
 }
 </script>
 
 <template>
-    <div class="genres-grid">
-        <div class="genres" v-for="(genre, index) in genres" :key="index">
-            <div class="checkbox-wrapper-12">
-                <div class="cbx">
-                    <input
-                        @change="
-                            () => {
-                                handleGenreSelection(genre);
-                            }
-                        "
-                        :id="`cbx-` + index"
-                        type="checkbox"
-                    />
-                    <label :for="`cbx-` + index"
-                        ><span class="genre-name">{{ genre }}</span></label
-                    >
-                    <svg width="15" height="14" viewbox="0 0 15 14" fill="none">
-                        <path d="M2 8.36364L6.23077 12L13 2"></path>
-                    </svg>
+    <div>
+        <div class="genres-grid">
+            <div class="genres" v-for="(genre, index) in genres" :key="index">
+                <div class="checkbox-wrapper-12">
+                    <div class="cbx">
+                        <input
+                            @change="
+                                () => {
+                                    handleGenreSelection(genre);
+                                }
+                            "
+                            :id="`cbx-` + index"
+                            type="checkbox"
+                        />
+                        <label :for="`cbx-` + index"
+                            ><span class="genre-name">{{ genre }}</span></label
+                        >
+                        <svg
+                            width="15"
+                            height="14"
+                            viewbox="0 0 15 14"
+                            fill="none"
+                        >
+                            <path d="M2 8.36364L6.23077 12L13 2"></path>
+                        </svg>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" version="1.1"></svg>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" version="1.1"></svg>
             </div>
         </div>
+        <button @click="response()">Wyszukaj</button>
+
+        <Media :generes="selectedGenres" :url="url" />
     </div>
 </template>
 
