@@ -1,7 +1,3 @@
-type FuzzyDateInt = {
-    seasonYear: number | null;
-};
-
 type QueryRes = {
     data: {
         data: {
@@ -24,7 +20,10 @@ type QueryPageIndex = {
         data: {
             Page: {
                 media: Array<{
-                    seasonYear: FuzzyDateInt;
+                    seasonYear: number | null;
+                    startDate: {
+                        year: number | null;
+                    };
                 }>;
             };
         };

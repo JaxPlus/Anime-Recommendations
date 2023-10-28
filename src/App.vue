@@ -35,6 +35,9 @@ const accessToken = urlParams.get("access_token");
         <a href="#/">Home</a> | <a href="#/media">Media</a> |
         <a href="#/recommendations">Recommendations</a>
 
+        <br />
+        <br />
+
         <Suspense>
             <component :is="currentView" :url="url" :token="accessToken" />
         </Suspense>

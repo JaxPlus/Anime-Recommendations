@@ -7,8 +7,7 @@ const props = defineProps<{
     url: string;
 }>();
 
-async function findPage(generes: string[], url: string) {
-    let pageIndex = 1;
+async function findPage(generes: string[], url: string, pageIndex = 1) {
     const query = {
         operationName: "PageQuery",
         query: `
@@ -35,21 +34,45 @@ async function findPage(generes: string[], url: string) {
         data: query,
     }).catch((err) => console.log(err));
 
+    let foundValidSeasonYear = false;
+
     if (response) {
         response.data.data.Page.media.forEach((media) => {
-            console.log(pageIndex);
-            if (media.seasonYear != null) {
-                pageIndex++;
+            if (
+                !(
+                    typeof media.seasonYear === "undefined" ||
+                    media.seasonYear === null
+                )
+            ) {
+                foundValidSeasonYear = true;
+                return;
             }
         });
-    }
 
-    return pageIndex;
+        if (foundValidSeasonYear) {
+            console.log("znajzło pageIndex: " + pageIndex);
+            return pageIndex;
+        } else {
+            console.log("nie znajzło");
+        }
+
+        pageIndex++;
+        findPage(generes, url, pageIndex);
+    }
 }
+
+async function handleClick(generes: string[], url: string) {
+    const page = await findPage(generes, url);
+}
+
+// const pageNum = ref(await findPage(props.generes, props.url));
+
+// console.log(pageNum.value);
 </script>
 
 <template>
     <div>
-        <button @click="findPage(props.generes, props.url)">Dawaj</button>
+        <button @click="handleClick(props.generes, props.url)">Dawaj</button>
+        <!-- <p>{{ pageNum ? pageNum : "Ni ma" }}</p> -->
     </div>
 </template>
