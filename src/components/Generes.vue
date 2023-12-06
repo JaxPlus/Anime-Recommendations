@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import axios from "axios";
 import { ref } from "vue";
-import type { QueryRes } from "../types/types";
 import Media from "./Media.vue";
 
 const props = defineProps<{
@@ -29,43 +27,6 @@ const genres = [
     "Thriller",
 ];
 const selectedGenres = ref<string[]>([]);
-const headers = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-};
-
-const queryMedia = ref({
-    operationName: "mediaQuery",
-    query: `query mediaQuery($page: Int, $genres: [String]) {
-        Page(page: $page, perPage: 30) {
-                media(genre_in: $genres, startDate_greater: 20040101, sort: START_DATE_DESC) {
-                title {
-                    english
-                    romaji
-                }
-                description
-                coverImage {
-                    medium
-                }
-            }
-        }
-    }`,
-    variables: { page: 1, genres: selectedGenres.value },
-});
-
-async function response() {
-    const response: QueryRes | void = await axios({
-        url: props.url,
-        method: "post",
-        headers: headers,
-        data: queryMedia.value,
-    }).catch((err) => console.log(err));
-
-    if (response) {
-        console.log(response.data.data.Page, selectedGenres.value);
-        return response;
-    }
-}
 
 function handleGenreSelection(genre: string) {
     if (selectedGenres.value.includes(genre)) {
@@ -107,9 +68,8 @@ function handleGenreSelection(genre: string) {
                 </div>
             </div>
         </div>
-        <button @click="response()">Wyszukaj</button>
 
-        <Media :genres="selectedGenres" :url="url" />
+        <Media :genres="selectedGenres" :url="props.url" />
     </div>
 </template>
 
