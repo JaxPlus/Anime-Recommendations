@@ -31,3 +31,38 @@ type QueryPageIndex = {
 };
 
 export type { QueryPageIndex };
+
+type QueryRecomm = {
+    data: {
+        data: {
+            Page: {
+                recommendations: Array<{
+                    media: {
+                        coverImage: {
+                            medium: string;
+                        };
+                        genres: Array<string>;
+                        title: {
+                            english: string;
+                            romaji: string;
+                        };
+                        description: string;
+                    };
+                    mediaRecommendation: {
+                        genres: Array<string>;
+                        coverImage: {
+                            medium: string;
+                        };
+                        title: {
+                            english: string;
+                            romaji: string;
+                        };
+                        description: string;
+                    };
+                }>;
+            };
+        };
+    };
+};
+
+export type { QueryRecomm };

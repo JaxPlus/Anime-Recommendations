@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from "axios";
-import { Ref, ref } from "vue";
+import { ref } from "vue";
 import type { QueryRes } from "../types/types";
 import Media from "./Media.vue";
 
@@ -11,30 +11,29 @@ const props = defineProps<{
 const genres = [
     "Action",
     "Adventure",
-    "Cars",
     "Comedy",
-    "Dementia",
-    "Demons",
     "Drama",
     "Ecchi",
     "Fantasy",
-    "Game",
-    "Harem",
-    "Historical",
     "Horror",
-    "Josei",
-    "Romance",
-    "Magic",
-    "Martial Arts",
+    "Mahou Shoujo",
     "Mecha",
-    "Military",
     "Music",
+    "Mystery",
+    "Psychological",
+    "Romance",
+    "Sci-Fi",
+    "Slice of Life",
+    "Sports",
+    "Supernatural",
+    "Thriller",
 ];
-const selectedGenres: Ref<string[]> = ref([]);
+const selectedGenres = ref<string[]>([]);
 const headers = {
     "Content-Type": "application/json",
     Accept: "application/json",
 };
+
 const queryMedia = ref({
     operationName: "mediaQuery",
     query: `query mediaQuery($page: Int, $genres: [String]) {
@@ -110,7 +109,7 @@ function handleGenreSelection(genre: string) {
         </div>
         <button @click="response()">Wyszukaj</button>
 
-        <Media :generes="selectedGenres" :url="url" />
+        <Media :genres="selectedGenres" :url="url" />
     </div>
 </template>
 

@@ -32,17 +32,14 @@ const accessToken = urlParams.get("access_token");
 
 <template>
     <div>
-        <a href="#/">Home</a> | <a href="#/media">Media</a> |
-        <a href="#/recommendations">Recommendations</a>
-
-        <br />
-        <br />
+        <div id="menu">
+            <a href="#/">Home</a> | <a href="#/media">Media</a> |
+            <a href="#/recommendations">Recommendations</a>
+        </div>
 
         <Suspense>
             <component :is="currentView" :url="url" :token="accessToken" />
         </Suspense>
-
-        <br />
 
         <!-- <Login />
 
@@ -63,3 +60,24 @@ const accessToken = urlParams.get("access_token");
         </Suspense> -->
     </div>
 </template>
+
+<style scoped>
+#menu {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: calc(100% - 40px);
+    text-align: center;
+    padding: 20px;
+    background-color: rgb(138, 5, 5);
+}
+
+div:nth-child(2) {
+    margin-top: calc(44px + 2rem);
+}
+
+#menu a {
+    display: inline-block;
+    width: 25%;
+}
+</style>

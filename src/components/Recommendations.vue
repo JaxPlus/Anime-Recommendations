@@ -1,5 +1,6 @@
 <script async setup lang="ts">
 import axios from "axios";
+import { QueryRecomm } from "../types/types";
 
 const props = defineProps<{
     url: string;
@@ -43,41 +44,8 @@ const query = {
     variables: {},
 };
 
-type QueryRes = {
-    data: {
-        data: {
-            Page: {
-                recommendations: Array<{
-                    media: {
-                        coverImage: {
-                            medium: string;
-                        };
-                        genres: Array<string>;
-                        title: {
-                            english: string;
-                            romaji: string;
-                        };
-                        description: string;
-                    };
-                    mediaRecommendation: {
-                        genres: Array<string>;
-                        coverImage: {
-                            medium: string;
-                        };
-                        title: {
-                            english: string;
-                            romaji: string;
-                        };
-                        description: string;
-                    };
-                }>;
-            };
-        };
-    };
-};
-
 async function response() {
-    const response: QueryRes | void = await axios({
+    const response: QueryRecomm | void = await axios({
         url: props.url,
         method: "post",
         headers: headers,
