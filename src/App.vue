@@ -40,36 +40,19 @@ const accessToken = urlParams.get("access_token");
         <Suspense>
             <component :is="currentView" :url="url" :token="accessToken" />
         </Suspense>
-
-        <!-- <Login />
-
-        <Suspense>
-            <Generes :url="url" />
-        </Suspense>
-
-        <Suspense v-if="accessToken">
-            <RecommendationsAuthorized
-                v-if="accessToken"
-                :url="url"
-                :token="accessToken"
-            />
-        </Suspense>
-
-        <Suspense v-else>
-            <Recommendations :url="url" />
-        </Suspense> -->
     </div>
 </template>
 
 <style scoped>
 #menu {
+    --color: #715dd4;
     position: absolute;
     top: 0px;
     left: 0px;
     width: calc(100% - 40px);
     text-align: center;
     padding: 20px;
-    background-color: rgb(138, 5, 5);
+    background-color: var(--color);
 }
 
 div:nth-child(2) {

@@ -1,6 +1,9 @@
 <script async setup lang="ts">
 import axios from "axios";
 import { QueryRecomm } from "../types/types";
+/**
+ * @todo user anime name -> query if exists -> get id -> show recommendations
+ */
 
 const props = defineProps<{
     url: string;

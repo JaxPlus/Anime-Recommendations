@@ -2,12 +2,17 @@
 import axios from "axios";
 import type { QueryPageIndex, QueryRes } from "../types/types";
 import { ref } from "vue";
+import ButtonCom from "./ButtonCom.vue";
+import LoadingSpiner from "./LoadingSpiner.vue";
 
 const props = defineProps<{
     genres: string[];
     url: string;
 }>();
 let data = ref<QueryRes>();
+let isData = ref(false);
+let loading = ref(false);
+let pageStart = ref<number>(1);
 const headers = {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -18,7 +23,7 @@ async function findPage(genres: string[], url: string, pageIndex = 1) {
         operationName: "PageQuery",
         query: `
             query PageQuery($page: Int, $genres: [String]) {
-                Page(page: $page) {
+                Page(page: $page, perPage: 30) {
                     media(genre_in: $genres, startDate_lesser: 20231231, sort: START_DATE_DESC, type: ANIME) {
                         seasonYear
                     }
@@ -51,7 +56,7 @@ async function findPage(genres: string[], url: string, pageIndex = 1) {
         });
 
         if (foundValidSeasonYear) {
-            return pageIndex;
+            pageStart.value = pageIndex;
         }
 
         pageIndex++;
@@ -60,13 +65,13 @@ async function findPage(genres: string[], url: string, pageIndex = 1) {
 }
 
 async function handleClick(genres: string[], url: string) {
-    const pageIndex = await findPage(genres, url);
+    loading.value = true;
 
     const query = {
         operationName: "mediaQuery",
         query: `
             query mediaQuery($page: Int, $genres: [String]) {
-                Page(page: $page) {
+                Page(page: $page, perPage: 30) {
                     media(genre_in: $genres, startDate_lesser: 20231231, sort: START_DATE_DESC, type: ANIME) {
                         title {
                             english
@@ -80,7 +85,7 @@ async function handleClick(genres: string[], url: string) {
                     }
                 }
             }`,
-        variables: { page: pageIndex, genres: genres },
+        variables: { page: pageStart.value, genres: genres },
     };
 
     const response: QueryRes | void = await axios({
@@ -88,17 +93,35 @@ async function handleClick(genres: string[], url: string) {
         method: "post",
         headers: headers,
         data: query,
-    }).catch((err) => console.log(err));
+    })
+        .catch((err) => console.log(err))
+        .finally(() => {
+            loading.value = false;
+        });
 
     if (response) {
+        isData.value = true;
         data.value = response;
+        pageStart.value += 1;
     }
+}
+
+if (pageStart.value === 1) {
+    findPage(props.genres, props.url);
 }
 </script>
 
 <template>
     <div>
-        <button @click="handleClick(props.genres, props.url)">Dawaj</button>
+        <LoadingSpiner :loading="loading" />
+        <div class="divBtnStars">
+            <ButtonCom
+                variant="wStars"
+                class="btnStars"
+                @click="handleClick(props.genres, props.url)"
+                >Daj mi anime!</ButtonCom
+            >
+        </div>
 
         <div v-if="data" id="mediaGrid">
             <div class="mediaItem" v-for="media in data.data.data.Page.media">
@@ -116,18 +139,35 @@ async function handleClick(genres: string[], url: string) {
             </div>
         </div>
     </div>
+
+    <div v-if="isData" class="divBtnStars">
+        <ButtonCom
+            variant="notStars"
+            class="btnStars"
+            @click="handleClick(props.genres, props.url)"
+            >Przejdz do następnej strony</ButtonCom
+        >
+    </div>
 </template>
 
 <style scoped>
+.divBtnStars {
+    display: flex;
+    justify-content: center;
+    justify-items: center;
+    margin: 30px;
+}
+
 #mediaGrid {
     display: grid;
     grid-template-columns: auto auto;
-    grid-template-rows: repeat(25, calc(30rem + 160px));
+    grid-template-rows: repeat(15, calc(30rem + 160px));
 }
 .mediaItem {
     margin: 5px;
     background-color: #161616;
     display: flex;
+    border-radius: 20px;
     flex-direction: column;
     position: relative;
 }
