@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import Recommendations from "./components/Recommendations.vue";
-import Login from "./components/Login.vue";
-// import RecommendationsAuthorized from "./components/RecommendationsAuthorized.vue";
+import Home from "./components/Home.vue";
 import Generes from "./components/Generes.vue";
 
 const routes: Record<string, any> = {
-    "/": Login,
+    "/": Home,
     "/media": Generes,
     "/recommendations": Recommendations,
 };
@@ -17,10 +16,8 @@ window.addEventListener("hashchange", () => {
     currentPath.value = window.location.hash;
 });
 
-console.log(currentPath.value.slice(1));
-
 const currentView = computed(() => {
-    return routes[currentPath.value.slice(1) || "/"] || Login;
+    return routes[currentPath.value.slice(1) || "/"] || Home;
 });
 
 const url = "https://graphql.anilist.co";
@@ -37,9 +34,7 @@ const accessToken = urlParams.get("access_token");
             <a href="#/recommendations">Recommendations</a>
         </div>
 
-        <Suspense>
-            <component :is="currentView" :url="url" :token="accessToken" />
-        </Suspense>
+        <component :is="currentView" :url="url" :token="accessToken" />
     </div>
 </template>
 

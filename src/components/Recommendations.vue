@@ -1,143 +1,229 @@
 <script async setup lang="ts">
 import axios from "axios";
-import { QueryRecomm } from "../types/types";
+import { QueryAnimeName, QueryRecommendation } from "../types/types";
+import { ref } from "vue";
+import ButtonCom from "./ButtonCom.vue";
+import LoadingSpiner from "./LoadingSpiner.vue";
 /**
- * @todo user anime name -> query if exists -> get id -> show recommendations
+ * @todo user gaves anime name -> query if exists -> get id -> show recommendations
  */
 
 const props = defineProps<{
     url: string;
 }>();
 
+const animeName = ref("");
+const animeId = ref(0);
+const page = ref(0);
+const loading = ref(false);
+const data = ref<QueryRecommendation>();
+
 const headers = {
     "Content-Type": "application/json",
     Accept: "application/json",
 };
-const query = {
-    operationName: "Recommendations",
-    query: `
-        query Recommendations {
-            Page {
-                recommendations {
-                    media {
-                        coverImage {
-                            medium
+
+async function findName(e: Event) {
+    e.preventDefault();
+    loading.value = true;
+
+    const nameQuery = {
+        operationName: "nameQuery",
+        query: `
+        query nameQuery($animeNameVar: String) {
+            Media(search: $animeNameVar) {
+                id
+                title  {
+                    english
+                    romaji
+                }
+            }
+        } `,
+        variables: {
+            animeNameVar: animeName.value,
+        },
+    };
+
+    const response: QueryAnimeName | void = await axios({
+        url: props.url,
+        method: "post",
+        headers: headers,
+        data: nameQuery,
+    }).catch((err) => console.log(err));
+
+    if (response) {
+        animeId.value = response.data.data.Media.id;
+        await requestRec(animeId.value, props.url);
+    } else {
+        loading.value = false;
+    }
+}
+
+async function requestRec(mediaId: number, url: string, pageIndex = 1) {
+    const query = {
+        operationName: "PageQuery",
+        query: `
+            query PageQuery($page: Int, $mediaId: Int) {
+                Page(page: $page, perPage: 30) {
+                    recommendations(mediaId: $mediaId) {
+                        mediaRecommendation {
+                            title {
+                                english
+                                romaji
+                            }
+                            description
+                            coverImage {
+                                medium
+                            }
                         }
-                        title {
-                            english
-                            romaji
-                        }
-                        genres
-                        description
-                    }
-                    mediaRecommendation {
-                        coverImage {
-                            medium
-                        }
-                        title {
-                            english
-                            romaji
-                        }
-                        genres
-                        description
                     }
                 }
             }
-        }`,
-    variables: {},
-};
+        `,
+        variables: { page: pageIndex, mediaId: mediaId },
+    };
 
-async function response() {
-    const response: QueryRecomm | void = await axios({
-        url: props.url,
+    const response: QueryRecommendation | void = await axios({
+        url: url,
         method: "post",
         headers: headers,
         data: query,
     }).catch((err) => console.log(err));
 
+    loading.value = false;
+
     if (response) {
-        return response;
+        data.value = response;
+        console.log(data.value);
     }
 }
-
-const data = await response();
 </script>
 
 <template>
     <div>
-        <h1>To będzie rekomendacja anime czy cuś</h1>
+        <LoadingSpiner :loading="loading" />
 
-        <div id="cards">
-            <div
-                class="twoItems"
-                v-for="item in data?.data.data.Page.recommendations"
+        <form @submit="(e) => findName(e)">
+            <input
+                type="search"
+                class="input"
+                v-model="animeName"
+                name="animeName"
+                placeholder="Nazwa anime..."
+            />
+            <ButtonCom variant="wStars" type="submit"
+                >Wyszukaj mi rekomendacje!</ButtonCom
             >
-                <div class="item">
-                    <img
-                        :src="item.media.coverImage.medium"
-                        :alt="item.media.title.english"
-                    />
-                    <h2>{{ item.media.title.english }}</h2>
-                    <div>
-                        <p v-for="genres in item.media.genres">
-                            {{ genres + ", " }}
-                        </p>
-                    </div>
-                </div>
+        </form>
 
-                <div class="item">
+        <div v-if="data" id="cards">
+            <div
+                v-for="recommendation in data.data.data.Page.recommendations"
+                class="recommendation"
+            >
+                <div class="imgTitle">
                     <img
-                        :src="item.mediaRecommendation.coverImage.medium"
-                        :alt="item.mediaRecommendation.title.english"
+                        :src="
+                            recommendation.mediaRecommendation.coverImage.medium
+                        "
+                        :alt="animeName"
                     />
-                    <h2>{{ item.mediaRecommendation.title.english }}</h2>
-                    <div>
-                        <p v-for="genres in item.mediaRecommendation.genres">
-                            {{ genres + ", " }}
-                        </p>
-                    </div>
+                    <h3>
+                        {{
+                            recommendation.mediaRecommendation.title.english !=
+                            ""
+                                ? recommendation.mediaRecommendation.title
+                                      .romaji
+                                : recommendation.mediaRecommendation.title
+                                      .english
+                        }}
+                    </h3>
                 </div>
+                <p v-html="recommendation.mediaRecommendation.description"></p>
             </div>
+        </div>
+
+        <div id="btnContainer">
+            <ButtonCom
+                v-if="data"
+                variant="notStars"
+                @click="
+                    () => {
+                        page++;
+                        requestRec(animeId, props.url, page);
+                    }
+                "
+                >Przejdź do następnej strony</ButtonCom
+            >
         </div>
     </div>
 </template>
 
 <style scoped>
-#cards {
-    margin: auto;
-    width: 90vw;
-    display: grid;
-    grid-template-columns: auto auto;
+.input {
+    --color: #866efb;
+    --color-shadow: #715dd4;
+    max-width: 450px;
+    background-color: #f5f5f533;
+    padding: 0.15rem 0.5rem;
+    min-height: 40px;
+    border-radius: 4px;
+    outline: none;
+    border: none;
+    line-height: 1.15;
+    box-shadow: 0px 10px 20px -18px var(--color-shadow);
 }
 
-.twoItems {
-    border: 1px green solid;
+input:focus {
+    border-bottom: 2px solid var(--color);
+    border-radius: 4px 4px 2px 2px;
+}
+
+input:hover {
+    outline: 1px solid lightgrey;
+}
+
+#cards {
+    display: grid;
+    grid-template-columns: auto auto;
     margin: 5px;
 }
 
-.item {
-    display: grid;
-    grid-template-areas:
-        "coverImage title title"
-        "coverImage description description"
-        "coverImage generes generes";
-    grid-template-columns: 140px auto;
+.recommendation {
+    margin: 10px;
+    background-color: #161616;
+    border-radius: 20px;
 }
 
-.item > img {
-    grid-area: coverImage;
-}
-
-.item > h2 {
-    grid-area: title;
-    text-align: center;
-}
-
-.item > p {
-    grid-area: generes;
-}
-
-img {
+.recommendation > * {
     margin: 15px;
+}
+
+.imgTitle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h3 {
+    text-align: right;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
+}
+
+button {
+    margin-top: 20px;
+}
+
+#btnContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 </style>

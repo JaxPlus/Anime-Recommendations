@@ -32,32 +32,36 @@ type QueryPageIndex = {
 
 export type { QueryPageIndex };
 
-type QueryRecomm = {
+type QueryAnimeName = {
+    data: {
+        data: {
+            Media: {
+                id: number;
+                title: {
+                    english: string;
+                    romaji: string;
+                };
+            };
+        };
+    };
+};
+
+export type { QueryAnimeName };
+
+type QueryRecommendation = {
     data: {
         data: {
             Page: {
                 recommendations: Array<{
-                    media: {
-                        coverImage: {
-                            medium: string;
-                        };
-                        genres: Array<string>;
-                        title: {
-                            english: string;
-                            romaji: string;
-                        };
-                        description: string;
-                    };
                     mediaRecommendation: {
-                        genres: Array<string>;
-                        coverImage: {
-                            medium: string;
-                        };
                         title: {
                             english: string;
                             romaji: string;
                         };
                         description: string;
+                        coverImage: {
+                            medium: string;
+                        };
                     };
                 }>;
             };
@@ -65,4 +69,4 @@ type QueryRecomm = {
     };
 };
 
-export type { QueryRecomm };
+export type { QueryRecommendation };
