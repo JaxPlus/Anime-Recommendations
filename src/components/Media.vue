@@ -35,6 +35,9 @@ async function handleClick(genres: string[], url: string) {
 
     loading.value = true;
 
+    /**
+     * @todo zmień sortowanie (datę na następny sezon) albo wywal w ogóle po sprawdzeniu
+     */
     const query = {
         operationName: "mediaQuery",
         query: `
