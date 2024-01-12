@@ -1,24 +1,38 @@
 <script setup lang="ts">
 import axios from "axios";
-import type { QueryRes } from "../types/types";
 import { ref } from "vue";
+import type { QueryRes, ErrorType } from "../types/types";
 import ButtonCom from "./ButtonCom.vue";
 import LoadingSpiner from "./LoadingSpiner.vue";
+import Error from "./Error.vue";
 
 const props = defineProps<{
     genres: string[];
     url: string;
 }>();
+
 const data = ref<QueryRes>();
 const isData = ref(false);
 const loading = ref(false);
 const pageStart = ref(1);
+const error = ref<ErrorType>({
+    isErrorPresent: false,
+    errorMessage: "",
+});
+
 const headers = {
     "Content-Type": "application/json",
     Accept: "application/json",
 };
 
 async function handleClick(genres: string[], url: string) {
+    if (genres.length === 0) {
+        error.value.isErrorPresent = true;
+        error.value.errorMessage =
+            "Proszę wybrać przynajmniej jedną kategorię anime.";
+        return;
+    }
+
     loading.value = true;
 
     const query = {
@@ -48,14 +62,31 @@ async function handleClick(genres: string[], url: string) {
         headers: headers,
         data: query,
     })
-        .catch((err) => console.log(err))
+        .catch((err) => {
+            error.value.isErrorPresent = true;
+
+            switch (err.response.status) {
+                case 500:
+                    error.value.errorMessage =
+                        "Błąd po stronie serwera. Proszę spróbować za chwilę.";
+                    break;
+                default:
+                    break;
+            }
+        })
         .finally(() => {
             loading.value = false;
         });
 
     if (response) {
-        isData.value = true;
-        data.value = response;
+        if (response.data.data.Page.media.length !== 0) {
+            isData.value = true;
+            data.value = response;
+        } else {
+            error.value.isErrorPresent = true;
+            error.value.errorMessage =
+                "Nie znaleziono następnych anime z takimi gatunkami.";
+        }
     }
 }
 </script>
@@ -63,6 +94,10 @@ async function handleClick(genres: string[], url: string) {
 <template>
     <div>
         <LoadingSpiner :loading="loading" />
+        <Error v-if="error.isErrorPresent" :error="error">{{
+            error.errorMessage
+        }}</Error>
+
         <div class="divBtnStars">
             <ButtonCom
                 v-if="!isData"

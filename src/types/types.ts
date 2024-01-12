@@ -11,6 +11,7 @@ type QueryRes = {
             };
         };
     };
+    status: number;
 };
 
 export type { QueryRes };
@@ -28,6 +29,7 @@ type QueryPageIndex = {
             };
         };
     };
+    status: number;
 };
 
 export type { QueryPageIndex };
@@ -44,6 +46,7 @@ type QueryAnimeName = {
             };
         };
     };
+    status: number;
 };
 
 export type { QueryAnimeName };
@@ -67,6 +70,14 @@ type QueryRecommendation = {
             };
         };
     };
+    status: number;
 };
 
 export type { QueryRecommendation };
+
+type ErrorType = {
+    isErrorPresent: boolean;
+    errorMessage: string;
+};
+
+export type { ErrorType };

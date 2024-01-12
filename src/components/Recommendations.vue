@@ -1,12 +1,10 @@
 <script async setup lang="ts">
 import axios from "axios";
-import { QueryAnimeName, QueryRecommendation } from "../types/types";
 import { ref } from "vue";
+import { QueryAnimeName, QueryRecommendation, ErrorType } from "../types/types";
 import ButtonCom from "./ButtonCom.vue";
 import LoadingSpiner from "./LoadingSpiner.vue";
-/**
- * @todo user gaves anime name -> query if exists -> get id -> show recommendations
- */
+import Error from "./Error.vue";
 
 const props = defineProps<{
     url: string;
@@ -17,14 +15,42 @@ const animeId = ref(0);
 const page = ref(0);
 const loading = ref(false);
 const data = ref<QueryRecommendation>();
+const error = ref<ErrorType>({
+    isErrorPresent: false,
+    errorMessage: "",
+});
 
 const headers = {
     "Content-Type": "application/json",
     Accept: "application/json",
 };
 
-async function findName(e: Event) {
+function handleError(err: any) {
+    error.value.isErrorPresent = true;
+
+    switch (err.response.status) {
+        case 404:
+            error.value.errorMessage =
+                "Nie znaleziono takiego anime. Proszę wpisać dokładną nazwę tego czego szukasz.";
+            break;
+        case 500:
+            error.value.errorMessage =
+                "Błąd po stronie serwera. Proszę spróbować za chwilę.";
+            break;
+        default:
+            break;
+    }
+}
+
+async function findId(e: Event) {
     e.preventDefault();
+
+    if (animeName.value === "") {
+        error.value.isErrorPresent = true;
+        error.value.errorMessage = "Proszę wpisać nazwę szukanego anime.";
+        return;
+    }
+
     loading.value = true;
 
     const nameQuery = {
@@ -49,9 +75,11 @@ async function findName(e: Event) {
         method: "post",
         headers: headers,
         data: nameQuery,
-    }).catch((err) => console.log(err));
+    }).catch((err) => {
+        handleError(err);
+    });
 
-    if (response) {
+    if (response && !error.value.isErrorPresent) {
         animeId.value = response.data.data.Media.id;
         await requestRec(animeId.value, props.url);
     } else {
@@ -88,13 +116,18 @@ async function requestRec(mediaId: number, url: string, pageIndex = 1) {
         method: "post",
         headers: headers,
         data: query,
-    }).catch((err) => console.log(err));
+    }).catch((err) => handleError(err));
 
     loading.value = false;
 
     if (response) {
-        data.value = response;
-        console.log(data.value);
+        if (response.data.data.Page.recommendations.length !== 0) {
+            data.value = response;
+        } else {
+            error.value.isErrorPresent = true;
+            error.value.errorMessage =
+                "Nie znaleziono żadnych anime z takim tytułem, proszę wpisać inny bądź bajdziej dokładny tytuł.";
+        }
     }
 }
 </script>
@@ -102,8 +135,11 @@ async function requestRec(mediaId: number, url: string, pageIndex = 1) {
 <template>
     <div>
         <LoadingSpiner :loading="loading" />
+        <Error v-if="error.isErrorPresent" :error="error">{{
+            error.errorMessage
+        }}</Error>
 
-        <form @submit="(e) => findName(e)">
+        <form @submit="(e) => findId(e)">
             <input
                 type="search"
                 class="input"

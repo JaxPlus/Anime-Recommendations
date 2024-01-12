@@ -21,10 +21,6 @@ const currentView = computed(() => {
 });
 
 const url = "https://graphql.anilist.co";
-
-const urlFragment = window.location.hash.substring(1);
-const urlParams = new URLSearchParams(urlFragment);
-const accessToken = urlParams.get("access_token");
 </script>
 
 <template>
@@ -34,7 +30,7 @@ const accessToken = urlParams.get("access_token");
             <a href="#/recommendations">Recommendations</a>
         </div>
 
-        <component :is="currentView" :url="url" :token="accessToken" />
+        <component :is="currentView" :url="url" />
     </div>
 </template>
 
