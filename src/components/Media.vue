@@ -35,15 +35,26 @@ async function handleClick(genres: string[], url: string) {
 
     loading.value = true;
 
-    /**
-     * @todo zmień sortowanie (datę na następny sezon) albo wywal w ogóle po sprawdzeniu
-     */
+    const date = new Date();
+
+    date.setDate(date.getDate() + 90);
+
+    const monthWithZero =
+        date.getMonth() <= 9 ? "0" + date.getMonth() : date.getMonth();
+    const dayOfMonthWithZero =
+        date.getDate() <= 9 ? "0" + date.getDate() : date.getDate();
+
+    const dateString =
+        date.getFullYear().toLocaleString() +
+        monthWithZero +
+        dayOfMonthWithZero;
+
     const query = {
         operationName: "mediaQuery",
         query: `
             query mediaQuery($page: Int, $genres: [String]) {
                 Page(page: $page, perPage: 30) {
-                    media(genre_in: $genres, startDate_lesser: 20231231, sort: START_DATE_DESC, type: ANIME) {
+                    media(genre_in: $genres, startDate_lesser: ${dateString}, sort: START_DATE_DESC, type: ANIME, countryOfOrigin: JP) {
                         title {
                             english
                             romaji

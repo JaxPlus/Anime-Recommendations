@@ -57,7 +57,7 @@ async function findId(e: Event) {
         operationName: "nameQuery",
         query: `
         query nameQuery($animeNameVar: String) {
-            Media(search: $animeNameVar) {
+            Media(search: $animeNameVar, type: ANIME) {
                 id
                 title  {
                     english
